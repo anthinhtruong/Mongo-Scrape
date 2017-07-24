@@ -2,7 +2,7 @@ var express = require("express");
 var bodyParser = require("body-parser");
 var logger = require("morgan");
 var mongoose = require("mongoose");
-var handlebars = require("express-handlebars")
+var exphbs = require("express-handlebars")
 
 // Requiring our Note and Article models
 var Note = require("./models/Note.js");
@@ -54,6 +54,9 @@ db.once("open", function() {
 
 // Routes
 // ======
+app.get("/", function(req,res){
+    res.render("index")
+})
 
 // A GET request to scrape the echojs website
 app.get("/scrape", function(req, res) {
@@ -74,6 +77,12 @@ app.get("/scrape", function(req, res) {
       result.link = $(this).children("a").attr("href");
       result.author = $(this).children().children(".story-meta").children(".byline")
 
+      console.log(result.title)
+      console.log(result.link)
+      console.log(result.author)
+      console.log("--------------------")
+      console.log(result)
+
       // Using our Article model, create a new entry
       // This effectively passes the result object to the entry (and the title and link)
       var entry = new Article(result);
@@ -93,7 +102,7 @@ app.get("/scrape", function(req, res) {
     });
   });
   // Tell the browser that we finished scraping the text
-  res.send("Scrape Complete");
+  res.redirect("/articles");
 });
 
 // This will get the articles we scraped from the mongoDB
@@ -127,7 +136,7 @@ app.get("/articles", function(req, res) {
      
       else {
         var articleS = {articles:doc}
-        res.send("index",articleS);
+        res.render("index",articleS);
       }
 
 })
@@ -143,23 +152,21 @@ app.post("/articles/:id", function(req, res) {
     }
    
     else {
-        Article.findOneAndUpdate({ObjectId:req.param.id},{ $push: { "note": doc._id } },{ new: true },function(error, doc){
-            .exec(function(err, doc){
-                // log any errors
-                if (err){
-                console.log(err);
-                } else {
-                // Send Success Header
-                res.sendStatus(200);
-                }
-            });
-        }    
+      Article.findOneAndUpdate({ObjectId:req.param.id},{ $push: { "note": doc._id } },{ new: true },function(error, doc){
         
-        
-        };
+        if (error) {
+          res.send(error);
+        }
+       
+        else {
+          res.send(doc);
+        }
+      })
 
-    }); 
-});
+    }
+
+  })
+ });   
       
 
   
