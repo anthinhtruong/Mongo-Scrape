@@ -31,13 +31,13 @@ app.set("view engine", "handlebars");
 
 // Database configuration with mongoose
 
-if(process.env.NODE_ENV == 'production'){
-  mongoose.connect('mongodb://heroku_60zpcwg0:ubn0n27pi2856flqoedo9glvh8@ds119578.mlab.com:19578/heroku_60zpcwg0');
-}
-else{
-  mongoose.connect('mongodb://localhost/mongoscape');
+// if(process.env.NODE_ENV == 'production'){
+// //   mongoose.connect('mongodb://heroku_60zpcwg0:ubn0n27pi2856flqoedo9glvh8@ds119578.mlab.com:19578/heroku_60zpcwg0');
+// }
+// else{
+//   mongoose.connect('mongodb://localhost/mongoscape');
   
-}
+// }
 
 var db = mongoose.connection;
 
@@ -73,13 +73,13 @@ app.get("/scrape", function(req, res) {
     $(".story-body").each(function(i, element) {
      
       // Add the text and href of every link, and save them as properties of the result object
-      result.title = $(this).children(".story-meta").children("h2").text()
+      result.title = $(this).children().children(".story-meta").children("h2").text().trim()
       result.link = $(this).children("a").attr("href");
-      result.author = $(this).children().children(".story-meta").children(".byline")
+      result.author = $(this).children().children(".story-meta").children(".byline").text().trim()
 
-      console.log(result.title)
-      console.log(result.link)
-      console.log(result.author)
+      console.log("TITLEEEEE" + result.title)
+      console.log("LINKKKKK" + result.link)
+      console.log("AUTHHOOOORR" +result.author)
       console.log("--------------------")
       console.log(result)
 
@@ -117,13 +117,13 @@ app.get("/articles", function(req, res) {
     }
   });
 
-  // TODO: Finish the route so it grabs all of the articles
+  
 
 
 });
 
 // This will grab an article by it's ObjectId
-app.get("/articles", function(req, res) {
+app.get("/articles/:id", function(req, res) {
   
   Article.find().sort({_id: -1})
 
