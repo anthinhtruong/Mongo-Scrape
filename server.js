@@ -56,6 +56,7 @@ db.once("open", function() {
 // ======
 app.get("/", function(req,res){
     res.render("index")
+   
 })
 
 // A GET request to scrape the echojs website
@@ -65,24 +66,27 @@ app.get("/scrape", function(req, res) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(html);
 
-     var result = {};
+     var result = [];
 
     
 
     // Now, we grab every h2 within an article tag, and do the following:
     $(".story-body").each(function(i, element) {
-     
-      // Add the text and href of every link, and save them as properties of the result object
-      result.title = $(this).children().children(".story-meta").children("h2").text().trim()
-      result.link = $(this).children("a").attr("href");
-      result.author = $(this).children().children(".story-meta").children(".byline").text().trim()
+        var story = {};
 
-      console.log("TITLEEEEE" + result.title)
-      console.log("LINKKKKK" + result.link)
-      console.log("AUTHHOOOORR" +result.author)
+      // Add the text and href of every link, and save them as properties of the result object
+      story.title = $(this).children().children(".story-meta").children("h2").text().trim()
+      story.author = $(this).children().children(".story-meta").children(".byline").text().trim()
+      story.link = $(this).children("a").attr("href");
+      
+      console.log("=======================")
+      console.log("TITLEEEEE" + story.title)
+      console.log("LINKKKKK" + story.link)
+      console.log("AUTHHOOOORR" + story.author)
       console.log("--------------------")
       console.log(result)
 
+      result.push(story)
       // Using our Article model, create a new entry
       // This effectively passes the result object to the entry (and the title and link)
       var entry = new Article(result);
@@ -107,13 +111,13 @@ app.get("/scrape", function(req, res) {
 
 // This will get the articles we scraped from the mongoDB
 app.get("/articles", function(req, res) {
-  Article.find({}, function(){
+  Article.find({}, function(error,doc){
     if (error) {
       res.send(error);
     }
     
     else {
-      res.send(doc);
+      res.render("index", doc);
     }
   });
 
@@ -135,7 +139,7 @@ app.get("/articles/:id", function(req, res) {
       }
      
       else {
-        var articleS = {articles:doc}
+        var articleS = {articles: doc}
         res.render("index",articleS);
       }
 
@@ -172,6 +176,7 @@ app.post("/articles/:id", function(req, res) {
   
   
 var port = process.env.PORT || 3000;
+
 app.listen(port, function(){
   console.log('Running on port: ' + port);
 });
